@@ -192,6 +192,15 @@ class Figure
             else
                 check_rows()
                 generate_brick()
+        upper_cells:->
+                cell for cell in @cells when cell.upper_neighbour() not in @cells
+        left_cells:->
+                cell for cell in @cells when cell.left_neighbour() not in @cells
+        bottom_cells:->
+                cell for cell in @cells when cell.bottom_neighbour() not in @cells
+        right_cells:->
+                cell for cell in @cells when cell.right_neighbour() not in @cells
+
 
 class Cell extends Figure
         width:self.cell_width
@@ -201,11 +210,17 @@ class Cell extends Figure
                 @color=color
                 if x? and y?
                     @draw(x,y)
-        
+       
+        left_neighbour:->get_cell(@x-self.cell_width,@y)
+        right_neighbour:->get_cell(@x+self.cell_width,@y)
+        upper_neighbour:->get_cell(@x,@y - self.cell_width)
+        bottom_neighbour:->get_cell(@x,@y+self.cell_width)
+
         draw:(left_x,top_y)->
             Cross.__super__.draw.call(this,left_x,top_y)
             draw_cell(left_x+self.cell_width,top_y)
             set_cell(left_x,top_y,this)
+            return this
 
         clear:()->
             original_color = @color
@@ -220,12 +235,6 @@ class Cell extends Figure
 class Cross extends Figure
         width: 3*self.cell_width
         height:3*self.cell_height
-
-        upper_cells:->[@cells[0],@cells[1],@cells[3]]
-        bottom_cells:->[@cells[1],@cells[4],@cells[3]]
-        left_cells:->[@cells[0],@cells[1],@cells[4]]
-        right_cells:->[@cells[0],@cells[3],@cells[4]]
-
 
         draw:(left_x,top_y)->
             Cross.__super__.draw.call(this,left_x,top_y)
@@ -242,11 +251,6 @@ class Cube extends Figure
         width: 2*self.cell_width
         height:2*self.cell_height
 
-        upper_cells:->[@cells[0],@cells[1]]
-        bottom_cells:->[@cells[2],@cells[3]]
-        left_cells:->[@cells[0],@cells[2]]
-        right_cells:->[@cells[1],@cells[3]]
-
         draw:(left_x,top_y)->
                 Cube.__super__.draw.call(this,left_x,top_y)
                 @cells =[
@@ -260,28 +264,6 @@ class Stick extends Figure
 
         width: 4*self.cell_width
         height: self.cell_height
-
-        upper_cells:->
-            if @width>@height
-                @cells
-            else
-                [@cells[0]]
-        bottom_cells:->
-            if @width>@height
-                @cells
-            else
-                [@cells[3]]
-        left_cells:->
-            if @width>@height
-                [@cells[0]]
-            else
-                @cells
-
-        right_cells:->
-            if @width>@height
-                [@cells[3]]
-            else
-                @cells
 
         rotate:->
             @clear()
@@ -317,24 +299,31 @@ class ZShape extends Figure
     height: 2*self.cell_height
 
     rotated:false
-
-    upper_cells:->[@cells[0],@cells[1],@cells[3]]
-    bottom_cells:->[@cells[0],@cells[2],@cells[3]]
-    left_cells:->[@cells[0],@cells[2]]
-    right_cells:->[@cells[1],@cells[3]]
-       
+      
     rotate:->
+            @clear()
+            @rotated = not @rotated
+            @draw(@x,@y)
+                
          
 
     draw:(left_x,top_y)->
         ZShape.__super__.draw.call(this,left_x,top_y)
-        @cells =[
-                new Cell(left_x,top_y,@color),
-                new Cell(left_x+self.cell_width,top_y,@color),
-                new Cell(left_x+self.cell_width,top_y+self.cell_height,@color),
-                new Cell(left_x+2*self.cell_width,top_y+self.cell_height,@color)
-            ]
-        
+        cells = [
+                [left_x,top_y],
+                [left_x+self.cell_width,top_y]
+                [left_x+self.cell_width,top_y+self.cell_height],
+                [left_x+2*self.cell_width,top_y+self.cell_height]
+        ]
+
+        if @rotated
+                cells[1] = [left_x,top_y + self.cell_height]
+                cells[2] = [left_x-self.cell_width,top_y+self.cell_height]
+                cells[3] = [left_x-self.cell_width,top_y+2*self.cell_height]
+        for i in [0..3]
+            if not @cells[i]
+                @cells[i] = new Cell(null,null,@color)
+            @cells[i].draw(cells[i][0],cells[i][1],@color)
 
 
 

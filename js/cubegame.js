@@ -1,6 +1,7 @@
 (function() {
   var Cell, Cross, Cube, Figure, Stick, ZShape, check_rows, clear_cell, direction_from_event, draw_cell, generate_brick, get_cell, handle_click_event, handle_key_event, init, random_cells, random_color, self, set_cell,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -257,6 +258,58 @@
       }
     };
 
+    Figure.prototype.upper_cells = function() {
+      var cell, _i, _len, _ref, _ref2, _results;
+      _ref = this.cells;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cell = _ref[_i];
+        if (_ref2 = cell.upper_neighbour(), __indexOf.call(this.cells, _ref2) < 0) {
+          _results.push(cell);
+        }
+      }
+      return _results;
+    };
+
+    Figure.prototype.left_cells = function() {
+      var cell, _i, _len, _ref, _ref2, _results;
+      _ref = this.cells;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cell = _ref[_i];
+        if (_ref2 = cell.left_neighbour(), __indexOf.call(this.cells, _ref2) < 0) {
+          _results.push(cell);
+        }
+      }
+      return _results;
+    };
+
+    Figure.prototype.bottom_cells = function() {
+      var cell, _i, _len, _ref, _ref2, _results;
+      _ref = this.cells;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cell = _ref[_i];
+        if (_ref2 = cell.bottom_neighbour(), __indexOf.call(this.cells, _ref2) < 0) {
+          _results.push(cell);
+        }
+      }
+      return _results;
+    };
+
+    Figure.prototype.right_cells = function() {
+      var cell, _i, _len, _ref, _ref2, _results;
+      _ref = this.cells;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cell = _ref[_i];
+        if (_ref2 = cell.right_neighbour(), __indexOf.call(this.cells, _ref2) < 0) {
+          _results.push(cell);
+        }
+      }
+      return _results;
+    };
+
     return Figure;
 
   })();
@@ -274,10 +327,27 @@
       if ((x != null) && (y != null)) this.draw(x, y);
     }
 
+    Cell.prototype.left_neighbour = function() {
+      return get_cell(this.x - self.cell_width, this.y);
+    };
+
+    Cell.prototype.right_neighbour = function() {
+      return get_cell(this.x + self.cell_width, this.y);
+    };
+
+    Cell.prototype.upper_neighbour = function() {
+      return get_cell(this.x, this.y - self.cell_width);
+    };
+
+    Cell.prototype.bottom_neighbour = function() {
+      return get_cell(this.x, this.y + self.cell_width);
+    };
+
     Cell.prototype.draw = function(left_x, top_y) {
       Cross.__super__.draw.call(this, left_x, top_y);
       draw_cell(left_x + self.cell_width, top_y);
-      return set_cell(left_x, top_y, this);
+      set_cell(left_x, top_y, this);
+      return this;
     };
 
     Cell.prototype.clear = function() {
@@ -305,22 +375,6 @@
 
     Cross.prototype.height = 3 * self.cell_height;
 
-    Cross.prototype.upper_cells = function() {
-      return [this.cells[0], this.cells[1], this.cells[3]];
-    };
-
-    Cross.prototype.bottom_cells = function() {
-      return [this.cells[1], this.cells[4], this.cells[3]];
-    };
-
-    Cross.prototype.left_cells = function() {
-      return [this.cells[0], this.cells[1], this.cells[4]];
-    };
-
-    Cross.prototype.right_cells = function() {
-      return [this.cells[0], this.cells[3], this.cells[4]];
-    };
-
     Cross.prototype.draw = function(left_x, top_y) {
       Cross.__super__.draw.call(this, left_x, top_y);
       return this.cells = [new Cell(left_x + self.cell_width, top_y, this.color), new Cell(left_x, top_y + self.cell_height, this.color), new Cell(left_x + self.cell_width, top_y + self.cell_height, this.color), new Cell(left_x + 2 * self.cell_width, top_y + cell_height, this.color), new Cell(left_x + self.cell_width, top_y + 2 * cell_height, this.color)];
@@ -342,22 +396,6 @@
 
     Cube.prototype.height = 2 * self.cell_height;
 
-    Cube.prototype.upper_cells = function() {
-      return [this.cells[0], this.cells[1]];
-    };
-
-    Cube.prototype.bottom_cells = function() {
-      return [this.cells[2], this.cells[3]];
-    };
-
-    Cube.prototype.left_cells = function() {
-      return [this.cells[0], this.cells[2]];
-    };
-
-    Cube.prototype.right_cells = function() {
-      return [this.cells[1], this.cells[3]];
-    };
-
     Cube.prototype.draw = function(left_x, top_y) {
       Cube.__super__.draw.call(this, left_x, top_y);
       return this.cells = [new Cell(left_x, top_y, this.color), new Cell(left_x + self.cell_width, top_y, this.color), new Cell(left_x, top_y + self.cell_height, this.color), new Cell(left_x + self.cell_width, top_y + self.cell_height, this.color)];
@@ -378,38 +416,6 @@
     Stick.prototype.width = 4 * self.cell_width;
 
     Stick.prototype.height = self.cell_height;
-
-    Stick.prototype.upper_cells = function() {
-      if (this.width > this.height) {
-        return this.cells;
-      } else {
-        return [this.cells[0]];
-      }
-    };
-
-    Stick.prototype.bottom_cells = function() {
-      if (this.width > this.height) {
-        return this.cells;
-      } else {
-        return [this.cells[3]];
-      }
-    };
-
-    Stick.prototype.left_cells = function() {
-      if (this.width > this.height) {
-        return [this.cells[0]];
-      } else {
-        return this.cells;
-      }
-    };
-
-    Stick.prototype.right_cells = function() {
-      if (this.width > this.height) {
-        return [this.cells[3]];
-      } else {
-        return this.cells;
-      }
-    };
 
     Stick.prototype.rotate = function() {
       var height, width;
@@ -462,27 +468,27 @@
 
     ZShape.prototype.rotated = false;
 
-    ZShape.prototype.upper_cells = function() {
-      return [this.cells[0], this.cells[1], this.cells[3]];
+    ZShape.prototype.rotate = function() {
+      this.clear();
+      this.rotated = !this.rotated;
+      return this.draw(this.x, this.y);
     };
-
-    ZShape.prototype.bottom_cells = function() {
-      return [this.cells[0], this.cells[2], this.cells[3]];
-    };
-
-    ZShape.prototype.left_cells = function() {
-      return [this.cells[0], this.cells[2]];
-    };
-
-    ZShape.prototype.right_cells = function() {
-      return [this.cells[1], this.cells[3]];
-    };
-
-    ZShape.prototype.rotate = function() {};
 
     ZShape.prototype.draw = function(left_x, top_y) {
+      var cells, i, _results;
       ZShape.__super__.draw.call(this, left_x, top_y);
-      return this.cells = [new Cell(left_x, top_y, this.color), new Cell(left_x + self.cell_width, top_y, this.color), new Cell(left_x + self.cell_width, top_y + self.cell_height, this.color), new Cell(left_x + 2 * self.cell_width, top_y + self.cell_height, this.color)];
+      cells = [[left_x, top_y], [left_x + self.cell_width, top_y], [left_x + self.cell_width, top_y + self.cell_height], [left_x + 2 * self.cell_width, top_y + self.cell_height]];
+      if (this.rotated) {
+        cells[1] = [left_x, top_y + self.cell_height];
+        cells[2] = [left_x - self.cell_width, top_y + self.cell_height];
+        cells[3] = [left_x - self.cell_width, top_y + 2 * self.cell_height];
+      }
+      _results = [];
+      for (i = 0; i <= 3; i++) {
+        if (!this.cells[i]) this.cells[i] = new Cell(null, null, this.color);
+        _results.push(this.cells[i].draw(cells[i][0], cells[i][1], this.color));
+      }
+      return _results;
     };
 
     return ZShape;
